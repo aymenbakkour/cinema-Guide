@@ -6,9 +6,10 @@ import { motion } from 'framer-motion';
 
 interface MovieCardProps {
   item: Movie | Recommendation;
+  onClick?: () => void;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ item }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ item, onClick }) => {
   const { t } = useSettings();
   const isMovieFromLibrary = (item as Movie).id !== undefined;
   const movie = item as Movie;
@@ -18,28 +19,29 @@ const MovieCard: React.FC<MovieCardProps> = ({ item }) => {
   const typeColor = isMovie ? 'text-blue-600 dark:text-blue-400' : 'text-fuchsia-600 dark:text-fuchsia-400';
   const badgeBg = isMovie ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-fuchsia-100 dark:bg-fuchsia-900/30';
   const badgeText = isMovie ? 'text-blue-700 dark:text-blue-300' : 'text-fuchsia-700 dark:text-fuchsia-300';
-  const borderColor = isMovie ? 'hover:border-blue-500' : 'hover:border-fuchsia-500';
+  const borderColor = isMovie ? 'border-blue-500/40 group-hover:border-blue-500' : 'border-fuchsia-500/40 group-hover:border-fuchsia-500';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-300 border border-gray-100 dark:border-gray-700 ${borderColor} hover:-translate-y-2`}
+      onClick={onClick}
+      className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-300 border-[3px] ${borderColor} hover:-translate-y-2 cursor-pointer h-full`}
     >
-      {isMovieFromLibrary && movie.imageUrl && (
-        <div className="relative h-64 overflow-hidden">
+      {isMovieFromLibrary && (
+        <div className="relative aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-gray-900/50">
           <img 
-            src={movie.imageUrl} 
+            src={movie.imageUrl || `https://picsum.photos/seed/${movie.id}/400/600`} 
             alt={movie.titleArabic} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-             <p className="text-white text-sm line-clamp-3">{movie.synopsisArabic}</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+             <p className="text-white text-xs line-clamp-4 leading-relaxed">{movie.synopsisArabic}</p>
           </div>
           {movie.rating && (
-            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-yellow-400 font-bold text-sm">
+            <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-yellow-400 font-bold text-[10px] sm:text-xs border border-white/10">
               <Star className="w-3 h-3 fill-current" />
               {movie.rating.toFixed(1)}
             </div>
@@ -47,35 +49,35 @@ const MovieCard: React.FC<MovieCardProps> = ({ item }) => {
         </div>
       )}
 
-      <div className="p-5 flex-grow flex flex-col gap-3">
-        <div className="flex justify-between items-start">
-          <h3 className={`text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:${isMovie ? 'text-blue-500' : 'text-fuchsia-500'} transition-colors`}>
+      <div className="p-3 sm:p-4 flex-grow flex flex-col gap-2">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className={`text-xs sm:text-base font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:${isMovie ? 'text-blue-500' : 'text-fuchsia-500'} transition-colors leading-tight`}>
             {item.titleArabic}
           </h3>
           {isMovieFromLibrary && (
-            <span className={`px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 flex-shrink-0 ${badgeBg} ${badgeText}`}>
-              {isMovie ? <Film className="w-3 h-3" /> : <Tv className="w-3 h-3" />}
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 flex-shrink-0 ${badgeBg} ${badgeText}`}>
+              {isMovie ? <Film className="w-2.5 h-2.5" /> : <Tv className="w-2.5 h-2.5" />}
               {isMovie ? t('type.movie') : t('type.series')}
             </span>
           )}
         </div>
 
-        <div className="text-sm text-gray-500 dark:text-gray-400 font-medium truncate">
+        <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
           {item.titleEnglish}
         </div>
 
         {isMovieFromLibrary && (
-          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300 mt-1">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-gray-400" />
-              <span>{movie.year || 'N/A'}</span>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 mt-auto">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-gray-400" />
+              <span className="truncate">{movie.year || 'N/A'}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-gray-400" />
-              <span>{movie.origin === 'arabic' ? t('origin.arabic') : t('origin.foreign')}</span>
+            <div className="flex items-center gap-1">
+              <Globe className="w-3 h-3 text-gray-400" />
+              <span className="truncate">{movie.origin === 'arabic' ? t('origin.arabic') : t('origin.foreign')}</span>
             </div>
-            <div className="col-span-2 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-gray-400" />
+            <div className="col-span-2 flex items-center gap-1">
+              <Tag className="w-3 h-3 text-gray-400" />
               <span className="truncate">{movie.genre}</span>
             </div>
           </div>

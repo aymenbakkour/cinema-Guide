@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import MovieCard from '../components/MovieCard';
-import { Recommendation } from '../types';
+import ItemDetailsModal from '../components/ItemDetailsModal';
+import { Movie } from '../types';
 import { MOCK_MOVIES } from '../constants';
 import { useSettings } from '../context/SettingsContext';
 import { Sparkles, Dices, Loader2 } from 'lucide-react';
@@ -8,13 +9,14 @@ import { Sparkles, Dices, Loader2 } from 'lucide-react';
 const RecommendPage: React.FC = () => {
   const { t } = useSettings();
   const [prompt, setPrompt] = useState('');
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [luckyDipOrigin, setLuckyDipOrigin] = useState<'all' | 'arabic' | 'foreign'>('all');
   const [luckyDipType, setLuckyDipType] = useState<'all' | 'movie' | 'series'>('all');
-  const [luckyDipRecommendation, setLuckyDipRecommendation] = useState<Recommendation | null>(null);
+  const [luckyDipRecommendation, setLuckyDipRecommendation] = useState<Movie | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Movie | null>(null);
 
   const fetchRecommendations = useCallback(async () => {
     if (!prompt.trim()) {
@@ -31,21 +33,16 @@ const RecommendPage: React.FC = () => {
 
     try {
       const lowerCasePrompt = prompt.toLowerCase();
-      const filteredRecommendations: Recommendation[] = MOCK_MOVIES
+      const filteredRecommendations: Movie[] = MOCK_MOVIES
         .filter(movie => 
           movie.titleArabic.toLowerCase().includes(lowerCasePrompt) ||
           movie.titleEnglish.toLowerCase().includes(lowerCasePrompt) ||
           movie.genre.toLowerCase().includes(lowerCasePrompt) ||
           movie.synopsisArabic.toLowerCase().includes(lowerCasePrompt) ||
-          movie.synopsisEnglish.toLowerCase().includes(lowerCasePrompt) ||
+          (movie.synopsisEnglish && movie.synopsisEnglish.toLowerCase().includes(lowerCasePrompt)) ||
           movie.actors.some(actor => actor.toLowerCase().includes(lowerCasePrompt))
         )
-        .slice(0, 5)
-        .map(movie => ({
-          titleArabic: movie.titleArabic,
-          titleEnglish: movie.titleEnglish,
-          synopsisArabic: movie.synopsisArabic,
-        }));
+        .slice(0, 5);
 
       if (filteredRecommendations.length > 0) {
         setRecommendations(filteredRecommendations);
@@ -79,11 +76,7 @@ const RecommendPage: React.FC = () => {
     if (items.length > 0) {
       const randomIndex = Math.floor(Math.random() * items.length);
       const randomMovie = items[randomIndex];
-      setLuckyDipRecommendation({
-        titleArabic: randomMovie.titleArabic,
-        titleEnglish: randomMovie.titleEnglish,
-        synopsisArabic: randomMovie.synopsisArabic,
-      });
+      setLuckyDipRecommendation(randomMovie);
     } else {
       setError(t('recommend.error.lucky_dip_empty'));
     }
@@ -245,15 +238,17 @@ const RecommendPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {luckyDipRecommendation ? (
-              <MovieCard item={luckyDipRecommendation} />
+              <MovieCard item={luckyDipRecommendation} onClick={() => setSelectedItem(luckyDipRecommendation)} />
             ) : (
               recommendations.map((rec, index) => (
-                <MovieCard key={index} item={rec} />
+                <MovieCard key={index} item={rec} onClick={() => setSelectedItem(rec)} />
               ))
             )}
           </div>
         </div>
       )}
+
+      <ItemDetailsModal item={selectedItem} onClose={() => setSelectedItem(null)} />
 
       <style>
         {`

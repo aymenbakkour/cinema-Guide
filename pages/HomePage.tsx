@@ -6,10 +6,13 @@ import { MOCK_MOVIES } from '../constants';
 import { Movie } from '../types';
 import { useSettings } from '../context/SettingsContext';
 import { Sparkles, Library, RefreshCw } from 'lucide-react';
+import ItemDetailsModal from '../components/ItemDetailsModal';
+import MovieCard from '../components/MovieCard';
 
 const HomePage: React.FC = () => {
   const { t } = useSettings();
   const [currentRandomMovie, setCurrentRandomMovie] = useState<Movie | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Movie | null>(null);
 
   const getRandomMovie = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * MOCK_MOVIES.length);
@@ -20,7 +23,7 @@ const HomePage: React.FC = () => {
     setCurrentRandomMovie(getRandomMovie());
     const intervalId = setInterval(() => {
       setCurrentRandomMovie(getRandomMovie());
-    }, 10000);
+    }, 15000);
     return () => clearInterval(intervalId);
   }, [getRandomMovie]);
 
@@ -58,20 +61,11 @@ const HomePage: React.FC = () => {
           {t('home.random_recommendation')}
         </h2>
         {currentRandomMovie ? (
-          <div key={currentRandomMovie.id} className="text-center animate-fade-in-out">
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{currentRandomMovie.titleArabic}</p>
-            <p className="text-lg text-blue-600 dark:text-blue-400 font-medium">{currentRandomMovie.titleEnglish}</p>
-            <p className="text-md text-gray-500 dark:text-gray-400 mt-2">
-              {currentRandomMovie.type === 'movie' ? t('type.movie') : t('type.series')} • {currentRandomMovie.genre} ({currentRandomMovie.year}) • {currentRandomMovie.origin === 'arabic' ? t('origin.arabic') : t('origin.foreign')}
-            </p>
-            {currentRandomMovie.actors && currentRandomMovie.actors.length > 0 && (
-              <p className="text-sm text-gray-600 dark:text-gray-500 mt-2 italic">
-                {t('home.starring')} {currentRandomMovie.actors.slice(0, 3).join(', ')}{currentRandomMovie.actors.length > 3 ? '...' : ''}
-              </p>
-            )}
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 max-w-xl mx-auto line-clamp-3 leading-relaxed">
-              {currentRandomMovie.synopsisArabic}
-            </p>
+          <div className="max-w-xs mx-auto animate-fade-in-out">
+            <MovieCard 
+              item={currentRandomMovie} 
+              onClick={() => setSelectedItem(currentRandomMovie)} 
+            />
           </div>
         ) : (
           <p className="text-center text-gray-500 dark:text-gray-400">{t('home.loading_recommendation')}</p>
@@ -107,6 +101,8 @@ const HomePage: React.FC = () => {
           </p>
         </div>
       </section>
+
+      <ItemDetailsModal item={selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
 };

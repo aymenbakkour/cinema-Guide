@@ -1,4 +1,4 @@
-import { Movie } from '../types';
+import { Movie, Actor } from '../types';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -50,6 +50,7 @@ const mapTmdbToMovie = (item: any, type: 'movie' | 'series'): Movie => {
     titleEnglish: originalTitle,
     year,
     genre,
+    genreId: genreId || undefined,
     synopsisArabic: item.overview || 'لا يوجد وصف متاح.',
     imageUrl: item.poster_path ? `${IMAGE_BASE_URL}${item.poster_path}` : '',
     type,
@@ -99,12 +100,52 @@ export const discoverMedia = async (type: 'movie' | 'series', page = 1, filters?
       else url += `&first_air_date_year=${filters.year}`;
   }
 
+  if (filters?.with_genres) {
+    url += `&with_genres=${filters.with_genres}`;
+  }
+
   try {
     const response = await fetch(url);
     const data = await response.json();
     return data.results.map((item: any) => mapTmdbToMovie(item, type));
   } catch (error) {
     console.error(`Error discovering ${type}:`, error);
+    return [];
+  }
+};
+
+export const fetchPopularActors = async (page = 1): Promise<Actor[]> => {
+  if (!API_KEY) return [];
+  try {
+    const url = `${BASE_URL}/person/popular?api_key=${API_KEY}&language=ar-SA&page=${page}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    return data.results.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      profilePath: item.profile_path ? `${IMAGE_BASE_URL}${item.profile_path}` : '',
+      knownFor: item.known_for.map((m: any) => mapTmdbToMovie(m, m.media_type === 'tv' ? 'series' : 'movie')),
+      // Heuristic: if any known_for is Arabic, mark as Arabic
+      origin: item.known_for.some((m: any) => m.original_language === 'ar') ? 'arabic' : 'foreign'
+    }));
+  } catch (error) {
+    console.error('Error fetching actors:', error);
+    return [];
+  }
+};
+
+export const fetchActorCredits = async (personId: number): Promise<Movie[]> => {
+  if (!API_KEY) return [];
+  try {
+    const response = await fetch(`${BASE_URL}/person/${personId}/combined_credits?api_key=${API_KEY}&language=ar-SA`);
+    const data = await response.json();
+    return data.cast
+      .filter((m: any) => m.media_type === 'movie' || m.media_type === 'tv')
+      .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0))
+      .map((m: any) => mapTmdbToMovie(m, m.media_type === 'tv' ? 'series' : 'movie'));
+  } catch (error) {
+    console.error('Error fetching actor credits:', error);
     return [];
   }
 };

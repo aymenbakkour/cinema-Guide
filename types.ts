@@ -1,15 +1,26 @@
 export interface Movie {
-  id: string;
+  id: string | number;
   titleArabic: string;
   titleEnglish: string;
   year: number;
   genre: string;
+  genreId?: number;
   synopsisArabic: string;
-  synopsisEnglish: string;
+  synopsisEnglish?: string;
   imageUrl: string;
   type: 'movie' | 'series';
-  origin: 'arabic' | 'foreign'; // Added origin property
-  actors: string[]; // Added actor names
+  origin: 'arabic' | 'foreign';
+  country?: string;
+  actors: string[];
+  rating?: number;
+}
+
+export interface Actor {
+  id: number;
+  name: string;
+  profilePath: string;
+  knownFor: Movie[];
+  origin: 'arabic' | 'foreign';
 }
 
 export interface Recommendation {
