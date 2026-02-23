@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import SettingsModal from './SettingsModal';
 
 const Header: React.FC = () => {
-  const { t } = useSettings();
+  const { t, contentFilter, setContentFilter } = useSettings();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -18,6 +18,29 @@ const Header: React.FC = () => {
           </NavLink>
           
           <div className="flex items-center gap-3 sm:gap-6 text-sm sm:text-lg font-medium">
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
+              <button
+                onClick={() => setContentFilter(contentFilter === 'arabic' ? 'all' : 'arabic')}
+                className={`px-3 py-1 rounded-md text-xs sm:text-sm font-bold transition-all ${
+                  contentFilter === 'arabic'
+                    ? 'bg-white dark:bg-gray-600 text-fuchsia-600 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                عربي
+              </button>
+              <button
+                onClick={() => setContentFilter(contentFilter === 'foreign' ? 'all' : 'foreign')}
+                className={`px-3 py-1 rounded-md text-xs sm:text-sm font-bold transition-all ${
+                  contentFilter === 'foreign'
+                    ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                أجنبي
+              </button>
+            </div>
+
             <NavLink
               to="/"
               className={({ isActive }) =>

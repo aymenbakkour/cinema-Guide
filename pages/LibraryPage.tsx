@@ -150,7 +150,7 @@ const HorizontalRow: React.FC<HorizontalRowProps> = ({ title, items: initialItem
 };
 
 const LibraryPage: React.FC = () => {
-  const { t } = useSettings();
+  const { t, contentFilter } = useSettings();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(false);
@@ -161,7 +161,7 @@ const LibraryPage: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<Movie | Actor | null>(null);
   const [filterGenre, setFilterGenre] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
-  const [filterOrigin, setFilterOrigin] = useState<'all' | 'arabic' | 'foreign'>('all');
+  // Removed local filterOrigin state as it is now controlled globally
   const [filterCountry, setFilterCountry] = useState('all');
   const [filterActor, setFilterActor] = useState('all');
 
@@ -220,7 +220,7 @@ const LibraryPage: React.FC = () => {
         }
         if (filterGenre !== 'all') results = results.filter(item => item.genre === filterGenre);
         if (filterYear !== 'all') results = results.filter(item => item.year === parseInt(filterYear));
-        if (filterOrigin !== 'all') results = results.filter(item => item.origin === filterOrigin);
+        if (contentFilter !== 'all') results = results.filter(item => item.origin === contentFilter);
         if (filterCountry !== 'all') results = results.filter(item => item.country === filterCountry);
         if (filterActor !== 'all') results = results.filter(item => item.actors.includes(filterActor));
         if (searchTerm) {
@@ -249,19 +249,19 @@ const LibraryPage: React.FC = () => {
         } else {
           if (activeTab === 'all') {
              const m1 = await discoverMedia('movie', 1, { 
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              const m2 = await discoverMedia('movie', 2, { 
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              const s1 = await discoverMedia('series', 1, {
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              const s2 = await discoverMedia('series', 2, {
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              results = [...m1, ...m2, ...s1, ...s2].sort((a, b) => (b.rating || 0) - (a.rating || 0));
@@ -271,18 +271,18 @@ const LibraryPage: React.FC = () => {
              results = [...s1, ...s2];
           } else {
              const p1 = await discoverMedia(activeTab, 1, {
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              const p2 = await discoverMedia(activeTab, 2, {
-               with_original_language: filterOrigin === 'arabic' ? 'ar' : undefined,
+               with_original_language: contentFilter === 'arabic' ? 'ar' : undefined,
                year: filterYear !== 'all' ? filterYear : undefined
              });
              results = [...p1, ...p2];
           }
         }
         
-        if (filterOrigin === 'foreign') {
+        if (contentFilter === 'foreign') {
            results = results.filter(m => m.origin === 'foreign');
         }
         
@@ -296,7 +296,7 @@ const LibraryPage: React.FC = () => {
 
     const debounce = setTimeout(fetchData, 500);
     return () => clearTimeout(debounce);
-  }, [searchTerm, activeTab, filterOrigin, filterYear, apiError]);
+  }, [searchTerm, activeTab, contentFilter, filterYear, apiError]);
 
   // Extract unique values from MOCK_MOVIES for dropdowns (as API doesn't give us a list easily without extra calls)
   // In a real app, we'd fetch genre lists from API. For now, we use static lists or mock data for dropdowns.
@@ -348,7 +348,8 @@ const LibraryPage: React.FC = () => {
     setActiveTab('all');
     setFilterGenre('all');
     setFilterYear('all');
-    setFilterOrigin('all');
+    // contentFilter is global, so we might not want to clear it here, or we can reset it to 'all'
+    // setContentFilter('all'); // Optional: decide if clear filters should reset global language preference
     setFilterCountry('all');
     setFilterActor('all');
     setShowFilters(false);
@@ -428,26 +429,8 @@ const LibraryPage: React.FC = () => {
             <div className="flex flex-col gap-6">
               {/* Type Filter - Removed as we have tabs now */}
               
-              {/* Origin Filter */}
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('filter.all_origins')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {['all', 'arabic', 'foreign'].map((origin) => (
-                    <button
-                      key={origin}
-                      onClick={() => setFilterOrigin(origin as any)}
-                      className={`py-2 px-4 rounded-xl text-xs font-bold transition-all duration-300 ${
-                        filterOrigin === origin
-                          ? 'bg-blue-600 text-white shadow-md'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {origin === 'all' ? t('filter.all_origins') : t(`filter.${origin}`)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
+              {/* Origin Filter - Removed as it is now in Header */}
+              
               {/* Dropdowns */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="space-y-1">
@@ -552,7 +535,7 @@ const LibraryPage: React.FC = () => {
               id={actor.id}
               onSelectItem={setSelectedItem}
               activeTab={activeTab}
-              filterOrigin={filterOrigin}
+              filterOrigin={contentFilter}
               filterYear={filterYear}
             />
           ))}
@@ -571,7 +554,7 @@ const LibraryPage: React.FC = () => {
                 id={genreId || 0}
                 onSelectItem={setSelectedItem}
                 activeTab={activeTab}
-                filterOrigin={filterOrigin}
+                filterOrigin={contentFilter}
                 filterYear={filterYear}
               />
             );

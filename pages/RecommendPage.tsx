@@ -7,16 +7,28 @@ import { useSettings } from '../context/SettingsContext';
 import { Sparkles, Dices, Loader2 } from 'lucide-react';
 
 const RecommendPage: React.FC = () => {
-  const { t } = useSettings();
+  const { t, contentFilter } = useSettings();
   const [prompt, setPrompt] = useState('');
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [luckyDipOrigin, setLuckyDipOrigin] = useState<'all' | 'arabic' | 'foreign'>('all');
+  // Initialize luckyDipOrigin with contentFilter, but allow user to change it locally if needed
+  // Or if the requirement is strict global filter, we should force it. 
+  // The user said "converts all content", so likely we should respect the global filter.
+  // However, the lucky dip has its own controls. Let's make the lucky dip controls respect the global filter 
+  // or hide the origin control if global filter is set.
+  // For now, let's initialize it with contentFilter and keep it in sync if contentFilter changes.
+  
+  const [luckyDipOrigin, setLuckyDipOrigin] = useState<'all' | 'arabic' | 'foreign'>(contentFilter);
   const [luckyDipType, setLuckyDipType] = useState<'all' | 'movie' | 'series'>('all');
   const [luckyDipRecommendation, setLuckyDipRecommendation] = useState<Movie | null>(null);
   const [selectedItem, setSelectedItem] = useState<Movie | null>(null);
+
+  // Sync local state with global filter when it changes
+  React.useEffect(() => {
+    setLuckyDipOrigin(contentFilter);
+  }, [contentFilter]);
 
   const fetchRecommendations = useCallback(async () => {
     if (!prompt.trim()) {
@@ -33,7 +45,13 @@ const RecommendPage: React.FC = () => {
 
     try {
       const lowerCasePrompt = prompt.toLowerCase();
-      const filteredRecommendations: Movie[] = MOCK_MOVIES
+      let baseMovies = MOCK_MOVIES;
+      
+      if (contentFilter !== 'all') {
+        baseMovies = baseMovies.filter(movie => movie.origin === contentFilter);
+      }
+
+      const filteredRecommendations: Movie[] = baseMovies
         .filter(movie => 
           movie.titleArabic.toLowerCase().includes(lowerCasePrompt) ||
           movie.titleEnglish.toLowerCase().includes(lowerCasePrompt) ||
@@ -138,8 +156,8 @@ const RecommendPage: React.FC = () => {
           {t('recommend.lucky_dip.desc')}
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
-          {/* Origin Filters */}
-          <div className="flex flex-wrap gap-2 justify-center">
+          {/* Origin Filters - Disabled if global filter is active */}
+          <div className={`flex flex-wrap gap-2 justify-center ${contentFilter !== 'all' ? 'opacity-50 pointer-events-none' : ''}`}>
             <button
               onClick={() => setLuckyDipOrigin('all')}
               className={`py-2 px-4 rounded-full text-sm font-semibold transition-all duration-300 ${

@@ -2,12 +2,15 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 type Language = 'ar' | 'en';
 type Theme = 'dark' | 'light';
+type ContentFilter = 'all' | 'arabic' | 'foreign';
 
 interface SettingsContextType {
   language: Language;
   theme: Theme;
+  contentFilter: ContentFilter;
   toggleLanguage: () => void;
   toggleTheme: () => void;
+  setContentFilter: (filter: ContentFilter) => void;
   t: (key: string) => string;
 }
 
@@ -165,6 +168,7 @@ const translations: Record<Language, Record<string, string>> = {
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('ar');
   const [theme, setTheme] = useState<Theme>('dark');
+  const [contentFilter, setContentFilter] = useState<ContentFilter>('all');
 
   useEffect(() => {
     // Apply theme class to html element
@@ -195,7 +199,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   return (
-    <SettingsContext.Provider value={{ language, theme, toggleLanguage, toggleTheme, t }}>
+    <SettingsContext.Provider value={{ language, theme, contentFilter, toggleLanguage, toggleTheme, setContentFilter, t }}>
       {children}
     </SettingsContext.Provider>
   );

@@ -10,14 +10,19 @@ import ItemDetailsModal from '../components/ItemDetailsModal';
 import MovieCard from '../components/MovieCard';
 
 const HomePage: React.FC = () => {
-  const { t } = useSettings();
+  const { t, contentFilter } = useSettings();
   const [currentRandomMovie, setCurrentRandomMovie] = useState<Movie | null>(null);
   const [selectedItem, setSelectedItem] = useState<Movie | null>(null);
 
   const getRandomMovie = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * MOCK_MOVIES.length);
-    return MOCK_MOVIES[randomIndex];
-  }, []);
+    let filteredMovies = MOCK_MOVIES;
+    if (contentFilter !== 'all') {
+      filteredMovies = MOCK_MOVIES.filter(movie => movie.origin === contentFilter);
+    }
+    if (filteredMovies.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * filteredMovies.length);
+    return filteredMovies[randomIndex];
+  }, [contentFilter]);
 
   useEffect(() => {
     setCurrentRandomMovie(getRandomMovie());
