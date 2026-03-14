@@ -22,6 +22,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.home': 'الرئيسية',
     'nav.library': 'المكتبة',
     'nav.recommend': 'اقتراح',
+    'nav.favorites': 'المفضلة',
     'library.title': 'مكتبة الأفلام والمسلسلات',
     'search.placeholder': 'ابحث عن فيلم أو مسلسل أو ممثل...',
     'filter.all_types': 'الكل (نوع)',
@@ -85,6 +86,10 @@ const translations: Record<Language, Record<string, string>> = {
     'recommend.error.no_results': 'تعذر العثور على اقتراحات مطابقة في المكتبة المحلية. يرجى المحاولة بكلمات مفتاحية أخرى.',
     'recommend.error.lucky_dip_empty': 'لا توجد عناصر مطابقة لتفضيلات ضربة الحظ. يرجى تغيير الفلاتر.',
     
+    // Favorites Page
+    'favorites.title': 'قائمتي المفضلة',
+    'favorites.empty': 'لا توجد عناصر في المفضلة بعد.',
+    
     // Footer
     'footer.copyright': '© {year} دليلك للسينما. جميع الحقوق محفوظة.',
     'footer.developed_by': 'تم التطوير بواسطة',
@@ -95,6 +100,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.home': 'Home',
     'nav.library': 'Library',
     'nav.recommend': 'Recommend',
+    'nav.favorites': 'Favorites',
     'library.title': 'Movies & Series Library',
     'search.placeholder': 'Search for a movie, series, or actor...',
     'filter.all_types': 'All Types',
@@ -157,6 +163,10 @@ const translations: Record<Language, Record<string, string>> = {
     'recommend.error.empty': 'Please enter your preferences to get recommendations.',
     'recommend.error.no_results': 'No matching recommendations found in local library. Please try other keywords.',
     'recommend.error.lucky_dip_empty': 'No items match your lucky dip preferences. Please change filters.',
+
+    // Favorites Page
+    'favorites.title': 'My Favorites',
+    'favorites.empty': 'No items in favorites yet.',
 
     // Footer
     'footer.copyright': '© {year} Cinema Guide. All rights reserved.',

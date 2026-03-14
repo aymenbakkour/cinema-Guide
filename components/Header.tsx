@@ -71,6 +71,16 @@ const Header: React.FC = () => {
             >
               {t('nav.recommend')}
             </NavLink>
+            <NavLink
+              to="/favorites"
+              className={({ isActive }) =>
+                `hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 ${
+                  isActive ? 'text-fuchsia-600 dark:text-fuchsia-400 font-bold' : ''
+                }`
+              }
+            >
+              {t('nav.favorites')}
+            </NavLink>
             
             <button
               onClick={() => setIsSettingsOpen(true)}

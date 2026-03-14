@@ -1,6 +1,7 @@
 import React from 'react';
 import { Movie, Actor } from '../types';
-import { X, Star, Calendar, Globe, Tag, Film, Tv, Users } from 'lucide-react';
+import { useFavorites } from '../context/FavoritesContext';
+import { X, Star, Calendar, Globe, Tag, Film, Tv, Users, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ItemDetailsModalProps {
@@ -9,11 +10,24 @@ interface ItemDetailsModalProps {
 }
 
 const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, onClose }) => {
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+
   if (!item) return null;
 
   const isMovie = (item as Movie).type !== undefined;
   const movie = item as Movie;
   const actor = item as Actor;
+
+  const isFav = isMovie ? isFavorite(movie.id) : false;
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isFav) {
+      removeFavorite(movie.id);
+    } else {
+      addFavorite(movie);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -32,19 +46,41 @@ const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({ item, onClose }) =>
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           className="relative w-full max-w-4xl bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] border border-gray-100 dark:border-gray-800"
         >
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-[110] p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors md:hidden"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="absolute top-4 right-4 z-[110] flex items-center gap-2 md:hidden">
+            {isMovie && (
+              <button
+                onClick={toggleFavorite}
+                className="p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                aria-label="Toggle Favorite"
+              >
+                <Heart className={`w-6 h-6 ${isFav ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 z-[110] p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full transition-colors hidden md:block"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="absolute top-6 right-6 z-[110] hidden md:flex items-center gap-3">
+            {isMovie && (
+              <button
+                onClick={toggleFavorite}
+                className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full transition-colors"
+                aria-label="Toggle Favorite"
+              >
+                <Heart className={`w-6 h-6 ${isFav ? 'fill-red-500 text-red-500' : ''}`} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
 
           {/* Left Side: Image */}
           <div className={`w-full md:w-2/5 h-72 md:h-auto relative bg-gray-100 dark:bg-gray-800 border-b md:border-b-0 md:border-l border-gray-100 dark:border-gray-800 ${!isMovie ? 'p-8' : ''}`}>

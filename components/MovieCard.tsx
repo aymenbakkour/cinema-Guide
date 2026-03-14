@@ -1,7 +1,8 @@
 import React from 'react';
 import { Movie, Recommendation } from '../types';
 import { useSettings } from '../context/SettingsContext';
-import { Film, Tv, Globe, Users, Calendar, Tag, Star } from 'lucide-react';
+import { useFavorites } from '../context/FavoritesContext';
+import { Film, Tv, Globe, Users, Calendar, Tag, Star, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface MovieCardProps {
@@ -11,6 +12,7 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({ item, onClick }) => {
   const { t } = useSettings();
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const isMovieFromLibrary = (item as Movie).id !== undefined;
   const movie = item as Movie;
 
@@ -21,14 +23,35 @@ const MovieCard: React.FC<MovieCardProps> = ({ item, onClick }) => {
   const badgeText = isMovie ? 'text-blue-700 dark:text-blue-300' : 'text-fuchsia-700 dark:text-fuchsia-300';
   const borderColor = isMovie ? 'border-blue-500/40 group-hover:border-blue-500' : 'border-fuchsia-500/40 group-hover:border-fuchsia-500';
 
+  const isFav = isMovieFromLibrary ? isFavorite(movie.id) : false;
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isFav) {
+      removeFavorite(movie.id);
+    } else {
+      addFavorite(movie);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       onClick={onClick}
-      className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-300 border-[3px] ${borderColor} hover:-translate-y-2 cursor-pointer h-full`}
+      className={`group bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl overflow-hidden flex flex-col transition-all duration-300 border-[3px] ${borderColor} hover:-translate-y-2 cursor-pointer h-full relative`}
     >
+      {isMovieFromLibrary && (
+        <button 
+          onClick={toggleFavorite}
+          className="absolute top-2 left-2 z-20 p-1.5 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/70 transition-colors"
+          aria-label="Toggle Favorite"
+        >
+          <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+        </button>
+      )}
+
       {isMovieFromLibrary && (
         <div className="relative aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-gray-900/50">
           <img 
@@ -41,13 +64,14 @@ const MovieCard: React.FC<MovieCardProps> = ({ item, onClick }) => {
              <p className="text-white text-xs line-clamp-4 leading-relaxed">{movie.synopsisArabic}</p>
           </div>
           {movie.rating && (
-            <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-yellow-400 font-bold text-[10px] sm:text-xs border border-white/10">
+            <div className="absolute top-2 right-2 z-10 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-yellow-400 font-bold text-[10px] sm:text-xs border border-white/10">
               <Star className="w-3 h-3 fill-current" />
               {movie.rating.toFixed(1)}
             </div>
           )}
         </div>
       )}
+
 
       <div className="p-3 sm:p-4 flex-grow flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
